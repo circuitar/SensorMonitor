@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/js/jquery.js"></script>
+    <script src="/js/raphael.js"></script>
+    <script src="/js/justgage.js"></script>
+    <script type="text/javascript">
+        {% for sensor in sensors %}
+            var {{ sensor.code }}Gauge;
+        {% endfor %}
+
+        $(function() {
+            {% for sensor in sensors %}
+                {{ sensor.code }}Gauge = new JustGage({
+                    id: "{{ sensor.code }}-gauge",
+                    value: 0,
+                    min: {{ sensor.min_value }},
+                    max: {{ sensor.max_value }},
+                    title: "{{ sensor.name }}",
+                    label: "{{ sensor.units }}",
+                    refreshAnimationTime: 1000,
+                    refreshAnimationType: "linear"
+                });
+            {% endfor %}
+
+            update();
+        });
+
+        function update() {
+            $.getJSON("sensor", function (data) {
+                {% for sensor in sensors %}
+                    if (data["{{ sensor.code }}"] != undefined) {
+                        {{ sensor.code }}Gauge.refresh(data["{{ sensor.code }}"]);
+                    }
+                {% endfor %}
+            });
+            setTimeout("update()", 1000);
+        }
+
+    </script>
+    <title>Monitoramento de Processo</title>
+</head>
+<body>
+<div id="logo" style="padding: 20px 0 0 40px">
+    <img src="/images/logo.png" width="184" height="40">
+</div>
+{% for sensor in sensors %}
+    <div id="{{ sensor.code }}-gauge" style="float: left; width: 420px; height: 336px;"></div>
+{% endfor %}
+</body>
+</html>
