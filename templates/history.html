@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('datetime', 'Hora');
+            data.addColumn('number', '');
+            {% for data in sensor_data %}
+                data.addRow([new Date("{{ data.time|date:"c" }}"), {{ data.value }}]);
+            {% endfor %}
+
+        var options = {
+            title: '{{ sensor.name }} ({{ sensor.units }}) - {{ date|date:"d/m/Y" }}',
+            legend: { position: 'none' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+    }
+    </script>
+    <title>Monitoramento de Processo - Histórico - {{ sensor.name }} - {{ date|date:"d/m/Y" }}</title>
+</head>
+<body>
+<div id="logo" style="padding: 20px 0 0 40px">
+    <img src="/images/logo.png" width="184" height="40">
+</div>
+<div id="chart_div" style="width: 900px; height: 500px;"></div>
+<div style="width: 900px; text-align: center;">
+    <<
+    <a href="{% url 'SensorMonitorPanel.views.history' code=sensor.code year=previous_date.year|stringformat:"04i" month=previous_date.month|stringformat:"02i" day=previous_date.day|stringformat:"02i" %}">Dia anterior</a>
+    |
+    <a href="{% url 'SensorMonitorPanel.views.history' code=sensor.code year=next_date.year|stringformat:"04i" month=next_date.month|stringformat:"02i" day=next_date.day|stringformat:"02i" %}">Próximo dia</a>
+    >>
+</div>
+<div style="width: 900px; text-align: center;">
+    <a href="{% url 'SensorMonitorPanel.views.home' %}">Tela principal</a>
+</div>
+</body>
+</html>

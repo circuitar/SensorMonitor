@@ -45,7 +45,9 @@
     <img src="/images/logo.png" width="184" height="40">
 </div>
 {% for sensor in sensors %}
-    <div id="{{ sensor.code }}-gauge" style="float: left; width: 420px; height: 336px;"></div>
+    <a href="/history/{{ sensor.code }}/{% now "Y/m/d" %}">
+        <div id="{{ sensor.code }}-gauge" style="float: left; width: 420px; height: 336px;"></div>
+    </a>
 {% endfor %}
 </body>
 </html>

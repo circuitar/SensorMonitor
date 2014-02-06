@@ -3,10 +3,11 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 from models import SensorType, SensorData
 from django.views.decorators.csrf import csrf_exempt
+import datetime
 
 
 def home(request):
-    return render(request, 'index.htm', {
+    return render(request, 'index.html', {
         'sensors': SensorType.objects.all(),
     })
 
@@ -38,5 +39,32 @@ def sensor(request):
                 pass
 
         return HttpResponse()
+
+    return HttpResponseForbidden
+
+
+def history(request, code, year, month, day):
+    if request.method == 'GET':
+        try:
+            sensor = SensorType.objects.get(code=code)
+            start_time = datetime.datetime(int(year), int(month), int(day))
+            end_time = start_time + datetime.timedelta(days=1)
+
+            # Get data for the given sensor code
+            all_sensor_data = sensor.data.filter(time__range=(start_time, end_time)).all()
+            sensor_data = []
+            if all_sensor_data:
+                for i in range(0, len(all_sensor_data) - 1):
+                    if all_sensor_data[i].time.minute != all_sensor_data[i + 1].time.minute:
+                        sensor_data += [all_sensor_data[i]]
+            return render(request, 'history.html', {
+                'date': start_time,
+                'previous_date': start_time - datetime.timedelta(days=1),
+                'next_date': end_time,
+                'sensor': sensor,
+                'sensor_data': reversed(sensor_data),
+            })
+        except SensorType.DoesNotExist:
+            return HttpResponseForbidden
 
     return HttpResponseForbidden
